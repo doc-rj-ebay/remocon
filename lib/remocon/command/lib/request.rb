@@ -53,11 +53,19 @@ module Remocon
     end
 
     def self.pull(config)
-      raw_json, etag = open(config.endpoint, "Authorization" => "Bearer #{config.token}") do |io|
-        [io.read, io.meta["etag"]]
-      end
+      client, uri = Request.build_client(config)
 
-      [raw_json, etag]
+      headers = {
+          "Authorization" => "Bearer #{config.token}",
+          "Content-Type" => "application/json; UTF8",
+          "Content-Encoding" => "gzip",
+      }
+
+      request = Net::HTTP::Get.new(uri.request_uri, headers)
+
+      response = client.request(request)
+
+      [response.body, response.header["etag"]]
     end
 
     def self.fetch_etag(config)
@@ -68,10 +76,11 @@ module Remocon
       headers = {
           "Authorization" => "Bearer #{config.token}",
           "Content-Type" => "application/json; UTF8",
-          "Content-Encoding" => "gzip",
+          "Content-Encoding" => "gzip"
       }
 
       request = Net::HTTP::Get.new(uri.request_uri, headers)
+
       response = client.request(request)
 
       response.kind_of?(Net::HTTPOK) && response.header["etag"]

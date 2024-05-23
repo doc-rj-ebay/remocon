@@ -8,6 +8,8 @@ module Remocon
 
     def dump
       @parameters.each_with_object({}) do |(key, body), hash|
+        next unless body[:defaultValue][:value]
+
         hash[key] = body[:defaultValue]
         hash[key][:description] = body[:description] if body[:description]
 
